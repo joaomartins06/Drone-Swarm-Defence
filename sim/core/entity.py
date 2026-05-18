@@ -1,12 +1,14 @@
 from typing import Protocol, runtime_checkable
 
+''' 
+Defines the Entity protocol: the structural contract that every world object 
+(target, radar, interceptor) must satisfy to be stepped forward by the World.
+'''
+
 @runtime_checkable
-class Entity:
+class Entity(Protocol):
     entity_id: str
 
     def update(self, t:float, dt:float) -> None: ...
 
-
-#this file is used to create a protocol for entities in the simulation. 
-# This allows us to define a common interface for all entities, such as targets and radars, 
-# without having to define a base class. 
+    

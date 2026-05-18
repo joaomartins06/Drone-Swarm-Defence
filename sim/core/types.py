@@ -2,6 +2,17 @@ import numpy as np
 from dataclasses import dataclass
 from typing import NamedTuple
 
+''' 
+Shared data types used across the entire simulator: a 2D point, 
+a read-only view into a target state vector, and a radar measurement record. 
+No simulation logic lives here.
+'''
+
+# State vector convention: [x, vx, y, vy]
+# Index 0: x position (m)
+# Index 1: x velocity (m/s)
+# Index 2: y position (m)
+# Index 3: y velocity (m/s)
 
 IX = 0
 IVX = 1
@@ -20,7 +31,7 @@ class Vec2(NamedTuple):
     def distance_to(self, other: 'Vec2') -> float:
         dx = self.x - other.x
         dy = self.y - other.y
-        return np.hypot(dx, dy)
+        return float(np.hypot(dx, dy))
     
 
 @dataclass(frozen=True)
@@ -42,8 +53,8 @@ class TargetStateView:
         return Vec2(self.x, self.y)
     
     @property
-    def velocity(self) -> float:
-        return np.hypot(self.vx, self.vy)
+    def speed(self) -> float:
+        return float(np.hypot(self.vx, self.vy))
     
     @property
     def heading_rad(self)-> float:
@@ -61,9 +72,12 @@ class Measurement:
     #radar id
     radar_id: str
 
+
     def to_cartesian(self, radar_position: Vec2) -> Vec2:
-        x = radar_position.x + self.range_m * np.cos(self.bearing_rad)
-        y = radar_position.y + self.range_m * np.sin(self.bearing_rad)
+        #this is to be used for debugging purposes
+        #not going to feed it into the KF 
+        x = float(radar_position.x + self.range_m * np.cos(self.bearing_rad))
+        y = float(radar_position.y + self.range_m * np.sin(self.bearing_rad))
         return Vec2(x, y)
     
 

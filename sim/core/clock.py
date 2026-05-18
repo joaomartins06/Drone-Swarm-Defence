@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
 
 
+''' 
+Simulation clock tracking three independent rates: 
+physics integration, radar measurement, and display rendering. 
+All timing in the simulator derives from this single source of truth.
+'''
+
 @dataclass
 class Clock:
     dt: float = 0.1
@@ -15,9 +21,9 @@ class Clock:
         if self.dt  <= 0:
             raise ValueError("dt must be positive")
         if self.measurement_period < self.dt:
-            raise ValueError("measurement_period must be less than time step dt")
+            raise ValueError("measurement_period must be larger than time step dt")
         
-        self._ticks_per_measurement = round(self.measurement_period / self.dt)
+        self._ticks_per_measurement = max(1, round(self.measurement_period / self.dt))
         self._ticks_per_render = max(1, round(self.render_period / self.dt))
 
     @property
