@@ -13,12 +13,15 @@ No simulation logic lives here.
 # Index 1: x velocity (m/s)
 # Index 2: y position (m)
 # Index 3: y velocity (m/s)
+#index 4: angular velocity when turning
 
 IX = 0
 IVX = 1
 IY = 2
 IVY = 3
+OMEGA = 4
 STATE_DIM_CV = 4
+STATE_DIM_CT = 5
 
 
 class Vec2(NamedTuple):
@@ -43,9 +46,9 @@ class TargetStateView:
 
     @classmethod
     def from_array(cls, arr: np.ndarray) -> "TargetStateView":
-        if arr.shape != (STATE_DIM_CV,):
-            raise ValueError(f"Expected array of shape {(STATE_DIM_CV,)}, got {arr.shape}")
-            
+        if arr.shape not in ((STATE_DIM_CV,), (STATE_DIM_CT,)):
+            raise ValueError(f"Expected array of shape {(STATE_DIM_CV,)} or {(STATE_DIM_CT,)}, got {arr.shape}")
+             
         return cls(x=arr[IX], vx=arr[IVX], y=arr[IY], vy=arr[IVY])
     
     @property
