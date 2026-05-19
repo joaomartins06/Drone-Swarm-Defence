@@ -19,7 +19,7 @@ IX = 0
 IVX = 1
 IY = 2
 IVY = 3
-OMEGA = 4
+IW = 4
 STATE_DIM_CV = 4
 STATE_DIM_CT = 5
 

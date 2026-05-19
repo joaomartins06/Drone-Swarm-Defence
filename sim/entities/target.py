@@ -1,7 +1,23 @@
 import numpy as np
-from sim.core import Vec2, IW, IX, IY, IVX, IVY, STATE_DIM_CT
+from sim.core import Vec2, IW, IX, IY, IVX, IVY
 from sim.core.types import TargetStateView
 
+''' 
+This class represents the target of the simulation, which will be our drones
+The target is represented by a state vector of dimension 5:
+[ x, vx, y, vy, omega ]
+where:
+- x and y are the position of the target in meters
+- vx and vy are the velocity of the target in meters per second
+- omega is the angular velocity of the target in radians per second, which is used to turn
+
+Then we also specify a list of waypoints that the target will follow, 
+a radius in meters to consider the target has arrived at a waypoint and ´
+the maximum angular velocity in radians per second when turning (basically, how agile is the drone)
+
+The main method is update, which computes the next state of the drone given its current state, 
+time and timestep and its next waypoint.
+'''
 
 class Target:
 
