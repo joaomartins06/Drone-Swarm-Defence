@@ -23,7 +23,7 @@ class Target:
 
     def __init__(self, target_id: str, initial_position: Vec2, initial_heading: float, 
                  initial_speed: float, waypoints: list[Vec2], arrival_radius:float, 
-                 omega_max: float ) -> None:
+                 omega_max: float, rcs:float = 0.01 ) -> None:
 
         #target's id
         self.entity_id = target_id
@@ -41,6 +41,14 @@ class Target:
             raise ValueError(f"omega_max must be non-negative, got {omega_max}")
         
         self.omega_max = omega_max
+
+        #radar cross section in m^2
+        #a typical value for a small drone is around 0.01 m^2
+        #naturally it varies depending on the stealth
+        #this could even be a B2 stealth bomber with a radar cross section of 0.0001 m^2
+        #but let's stick to the drones haha
+        self.rcs = rcs
+
 
 
     @property
