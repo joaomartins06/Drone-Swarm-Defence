@@ -37,14 +37,17 @@ class EKF:
         #measurement noise covariance matrix
         self.R = np.diag([self.sigma_r**2, self.sigma_b**2])
 
+
     @property
     def state(self) -> np.ndarray:
         return self.x.copy()
     
+
     @property
     def covariance(self) -> np.ndarray:
         return self.P.copy()
     
+
     @property
     def state_view(self) -> TargetStateView:
         return TargetStateView.from_array(self.x)
@@ -86,6 +89,11 @@ class EKF:
 
         #apply the measurement function
         z_pred = self._h(x_pred)
+
+        #in case the drone is right on top of the radar, measurement is very noisy and will cause issues
+        #for the matrix H
+        if z_pred[0] < 1e-3:
+            return
         #turn the measurement into a vector
         z = np.array([measurement.range_m, measurement.bearing_rad])
 
