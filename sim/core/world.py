@@ -16,6 +16,9 @@ class World:
     on_measurement_hooks: list[TickHook] = field(default_factory=list)
     #same thing on render ticks
     on_render_hooks: list[TickHook] = field(default_factory=list)
+    #this is for the EKF, which needs to run predict() for every tick
+    #whereas the update() will only run on measurement ticks
+    on_step_hooks: list[TickHook] = field(default_factory=list)
 
     def add_entity(self, entity: Entity) -> None:
         #check if the entity id is unique in the world
@@ -43,6 +46,10 @@ class World:
         for entity in self.entities:
             entity.update(t, dt)
 
+        #call step hooks for every tick
+        for hook in self.on_step_hooks:
+            hook(self)
+
         #call measurement hooks if it's a measurement tick
         if self.clock.is_measurement_tick():
             for hook in self.on_measurement_hooks:
@@ -53,6 +60,7 @@ class World:
         if self.clock.is_render_tick():
             for hook in self.on_render_hooks:
                 hook(self)
+
 
     def run_for(self, duration_s: float) -> None:
 

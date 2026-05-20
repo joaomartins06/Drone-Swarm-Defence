@@ -98,3 +98,14 @@ def test_measurement_hook_fires_at_measurement_cadence_not_every_tick():
     w.run_for(3.0)
     assert len(fired_at) == 3
     assert fired_at == pytest.approx([1.0, 2.0, 3.0], abs=1e-12)
+
+
+def test_on_step_hook_fires_at_every_tick():
+    #On step hook must fire 30 times over 3 seconds (one per physics tick).
+    #this is for the predict() step in the EKF
+    w = World(clock=Clock(dt=0.1, measurement_period=1.0))
+    fired_at: list[float] = []
+    w.on_step_hooks.append(lambda world: fired_at.append(world.clock.t))
+    w.run_for(3.0)
+    assert len(fired_at) == 30
+    assert fired_at == pytest.approx([0.1 * i for i in range(1, 31)], abs=1e-12)
