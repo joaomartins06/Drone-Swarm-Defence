@@ -115,12 +115,13 @@ class PygameRenderer:
         points = []
         for t in np.linspace(0, 2 * np.pi, N, endpoint=False):
             #compute normal elipse (angle = 0) for 3 std
-            local = np.array([3 * np.sqrt(np.maximum(eigvals, 0)) * np.cos(t),
-                              3 * np.sqrt(np.maximum(eigvals, 0)) * np.sin(t)])
+            axes = 3 * np.sqrt(np.maximum(eigvals, 0))
+            local = np.array([axes[0] * np.cos(t),
+                            axes[1] * np.sin(t)])
             #rotate it
             rotated = rot @ local
             #turn this point into a Vec2 ( we sum the center of the ellipse)
-            world_pt = Vec2(est_pos.x + rotated[0], est_pos.y + rotated[1])
+            world_pt = Vec2(est_pos.x + float(rotated[0]), est_pos.y + float(rotated[1]))
             #append it as a screen coordinates
             points.append(self.world_to_screen(world_pt))
 
