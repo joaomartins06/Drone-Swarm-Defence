@@ -58,7 +58,7 @@ pytest tests/ -v
  
 ## Repository structure
  
-
+'''
 sim/
 ├── core/        # Clock, World, Entity protocol, shared types
 ├── entities/    # Target, Radar, Interceptor, Drone
