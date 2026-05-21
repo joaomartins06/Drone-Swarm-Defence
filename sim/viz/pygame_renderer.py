@@ -12,14 +12,14 @@ from sim.core.world import World
 class PygameRenderer:
 
     def __init__(self, width: int = 800, height: int = 800, world_center: Vec2 = Vec2(0, 0),
-                 meter_per_pixel: float = 5.0, bg_color: tuple = (10, 10, 20)) -> None:
+                 meters_per_pixel: float = 5.0, bg_color: tuple = (10, 10, 20)) -> None:
         #length and width of the pygame window in pixels
         self.width = width
         self.height = height
         #set the center of the world
         self.world_center = world_center
         #how many meters un each pixel
-        self.meter_per_pixel = meter_per_pixel
+        self.meters_per_pixel = meters_per_pixel
         #background color for the window
         self.bg_color = bg_color
 
@@ -32,8 +32,8 @@ class PygameRenderer:
 
     def world_to_screen(self, world_pos: Vec2) -> tuple[int, int]:
         #this just converts world coordinates (in meters) to pixel coordinates
-        x = int((world_pos[IX] - self.world_center[IX]) / self.meter_per_pixel + self.width / 2)
-        y = int((self.world_center[IY] - world_pos[IY]) / self.meter_per_pixel + self.height / 2)
+        x = int((world_pos.x - self.world_center.x) / self.meters_per_pixel + self.width / 2)
+        y = int((self.world_center.y - world_pos.y) / self.meters_per_pixel + self.height / 2)
         return (x, y)
     
 
@@ -65,12 +65,13 @@ class PygameRenderer:
         triangle = [(px,py - size),(px - size,py + size),(px + size,   py + size)]
         pygame.draw.polygon(self.screen, (0, 255, 255), triangle)
 
+        #To be generalized when we have multiple radars
         #draw a circle where inside pfa > 0.5 and outside pfa < 0.5
         if radar.pfa > 0 and radar.pfa < 1 and radar.target.rcs > 0:
             #compute radius
             r50 = (np.log(0.5) / np.log(radar.pfa) * radar.C * radar.target.rcs) ** 0.25
             #turn it into a radius in pixels
-            r50_px = int(r50 / self.meter_per_pixel)
+            r50_px = int(r50 / self.meters_per_pixel)
             pygame.draw.circle(self.screen, (0, 80, 80), (px, py), r50_px, 1)
 
 
@@ -101,7 +102,7 @@ class PygameRenderer:
         P_xy = cov[np.ix_([IX, IY], [IX, IY])]
 
         #compute eigenvalues and eigenvectors
-        eigvals, eigvecs = np.linalg.eig(P_xy)
+        eigvals, eigvecs = np.linalg.eigh(P_xy)
         #angle of the major axis (first eigenvector)
         angle = np.arctan2(eigvecs[1, 0], eigvecs[0, 0])
         #pygame is a bit weird drawsing tilted elipses, so we need to fo this :/
@@ -114,8 +115,8 @@ class PygameRenderer:
         points = []
         for t in np.linspace(0, 2 * np.pi, N, endpoint=False):
             #compute normal elipse (angle = 0) for 3 std
-            local = np.array([3 * np.sqrt(eigvals[0]) * np.cos(t),
-                              3 * np.sqrt(eigvals[1]) * np.sin(t)])
+            local = np.array([3 * np.sqrt(np.maximum(eigvals, 0)) * np.cos(t),
+                              3 * np.sqrt(np.maximum(eigvals, 0)) * np.sin(t)])
             #rotate it
             rotated = rot @ local
             #turn this point into a Vec2 ( we sum the center of the ellipse)
@@ -127,25 +128,64 @@ class PygameRenderer:
 
     
     def draw(self, world: World, ekf: EKF) -> None:
-        #fill the background
+        #clear the previous frame
         self.screen.fill(self.bg_color)
 
-        #draw the radar
+        #loop through the world entities
         for entity in world.entities:
+            #if it is radar, draw a radar and its measurement
             if isinstance(entity, Radar):
                 self.draw_radar(entity)
+                #notice this will plot the last measurement of the radar
                 self.draw_measurement(entity)
 
-        #draw the target
-        for entity in world.entities:
+            #if it is a target, it will draw a target
             if isinstance(entity, Target):
                 self.draw_target(entity)
 
-        #draw the EKF estimate
+        #draw the EKF estimate and uncertainty
         self.draw_ekf(ekf)
+
+        #draw the text info about the simulation
+        self.draw_text(world, ekf)
 
         #update the display
         pygame.display.flip()
-        
+        #keep the window responsive
+        pygame.event.pump()
 
+
+    def draw_text(self, world: World, ekf: EKF) -> None:
+        t = world.clock.t
+        sv = ekf.state_view
+
+        #find the target remaining waypoints
+        remaining = 0
+        for entity in world.entities:
+            if isinstance(entity, Target):
+                remaining = len(entity.waypoints)
+                break
         
+        #lines to be displayed 
+        lines = [f"t = {t:.1f} s",
+                f"est pos = ({sv.x:.1f}, {sv.y:.1f}) m",
+                f"est speed = {sv.speed:.1f} m/s",
+                f"waypoints left = {remaining}",]
+        color = (220, 220, 220)
+        for i, line in enumerate(lines):
+            surf = self.font.render(line, True, color)
+            self.screen.blit(surf, (8, 8 + i * 16))
+
+
+    def should_quit(self) -> bool:
+        #check if the user has closed the window or pressed escape
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: return True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: return True
+        return False
+    
+    def close(self) -> None:
+        #closes the simulation
+        pygame.quit()
+        
+            
