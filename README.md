@@ -57,8 +57,7 @@ pytest tests/ -v
  
  
 ## Repository structure
- 
-'''
+```
 sim/
 ├── core/        # Clock, World, Entity protocol, shared types
 ├── entities/    # Target, Radar, Interceptor, Drone
@@ -71,6 +70,6 @@ tests/           # Mirrors sim/ structure, one file per module
 notebooks/       # Monte Carlo analysis, parameter sweeps
 docs/            # Technical report
 run_phase1.py    # Phase 1 demo entry point
-'''
+```
 
  
