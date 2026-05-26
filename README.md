@@ -33,7 +33,7 @@ uncertainty in real time.
 Run with:
  
 \`\`\`bash
-python run_phase1.py
+python run_phase1.py <YAML path>
 \`\`\`
  
 ## Stack
