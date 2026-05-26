@@ -1,0 +1,49 @@
+#this corresponds to a case that is known to give problems
+#the radar is rather close to the target's position. As a resulr, the jacobian on th emeasurement function is very large,
+#which causes the EKF to diverge and the estimate to change very little. 
+#regardless to say that its performance is very poor, but it was just a test case
+
+#define the world params
+world: 
+  dt: 0.1
+  measurement_period: 1.0
+  render_period: 0.033333
+  duration_s: 1500
+
+
+#define the target params
+target: 
+  target_id: "drone1"
+  initial_position: {x: 0.0, y: 0.0}
+  initial_heading: 0.0
+  initial_speed: 30.0
+  waypoints:
+    - {x: 1500.0, y: 0.0}
+    - {x: 1500.0, y: 1500.0}
+    - {x: -1500.0, y: 1500.0}
+    - {x: -1500.0, y: -1500.0}
+    - {x: 1500.0, y: -1500.0}
+    - {x: 0.0, y: 0.0}
+
+  arrival_radius: 30.0
+  omega_max_deg_per_s: 5.0 #deg/s
+  rcs: 0.01
+
+
+#define the radar params
+radar: 
+  radar_id: "radar1"
+  position: {x: 0.0, y: 0.0}
+  sigma_r: 10.0
+  sigma_b_deg: 1.0
+  pfa: 1e-6
+  C: 1e18
+  seed: 42
+
+
+#define the ekf params
+ekf:
+  initial_state: [0.0, 0.0, 0.0, 0.0]
+  initial_velocity_variance: 1e4
+  q: 1.0
+
